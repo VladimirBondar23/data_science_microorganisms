@@ -14,3 +14,7 @@ THRESHOLD = 100_000_000  # threshold value
 
 # Remove rows where 'run_total_bases' < THRESHOLD
 biorun_df = biorun_df[biorun_df['run_total_bases'] >= THRESHOLD]
+
+# Remove duplications
+biorun_df = biorun_df.drop_duplicates()
+phylum_df = phylum_df.drop_duplicates()
