@@ -66,8 +66,9 @@
 
         const labels = [];
         const values = [];
-        for (const [k, v] of Object.entries(data)) {
-          if (typeof v === "number") { labels.push(k); values.push(v); }
+        for (const [k, v] of Object.entries(data.average)) {
+          labels.push(k);
+          values.push(v);
         }
 
         if (labels.length && values.length) {
