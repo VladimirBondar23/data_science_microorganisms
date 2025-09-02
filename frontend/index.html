@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Microbial Community Viewer</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js לציור תרשים -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>🌱 Microbial Community Composition</h2>
+
+    <!-- רמת טקסונומיה -->
+    <label for="levelDropdown">Select a taxonomy level:</label>
+    <select id="levelDropdown">
+      <option value="">-- Select a Level --</option>
+      <option value="domain">Domain</option>
+      <option value="phylum">Phylum</option>
+      <option value="class">Class</option>
+      <option value="order">Order</option>
+      <option value="family">Family</option>
+      <option value="genus">Genus</option>
+      <option value="species">Species</option>
+    </select>
+
+    <!-- שם סביבת/אורגניזם (כפי שהבקאנד מצפה: organism_name) -->
+    <label for="environmentInput">Enter environment / organism_name:</label>
+    <input type="text" id="environmentInput" placeholder="e.g., soil, ocean, gut" />
+
+    <button id="goBtn">Get Community Composition</button>
+
+    <h3>Results</h3>
+    <pre id="result"></pre>
+
+    <canvas id="chart" style="margin-top:16px;"></canvas>
+  </div>
+
+  <script>
+    const btn = document.getElementById("goBtn");
+    const resultEl = document.getElementById("result");
+    const ctx = document.getElementById("chart").getContext("2d");
+    let chart; // נשמור מופע תרשים כדי להרוס לפני ציור חדש
+
+    btn.addEventListener("click", fetchCommunity);
+
+    async function fetchCommunity() {
+      const level = document.getElementById("levelDropdown").value;
+      const env = document.getElementById("environmentInput").value.trim();
+
+      if (!level) { alert("Please select a taxonomy level!"); return; }
+      if (!env)   { alert("Please enter an environment / organism_name!"); return; }
+
+      const url = `http://127.0.0.1:5000/samples/?level=${encodeURIComponent(level)}&organism_name=${encodeURIComponent(env)}`;
+
+      try {
+        btn.disabled = true;
+        btn.textContent = "Loading...";
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // הצגה כ-JSON
+        resultEl.textContent = JSON.stringify(data, null, 2);
+
+        const labels = [];
+        const values = [];
+        for (const [k, v] of Object.entries(data)) {
+          if (typeof v === "number") { labels.push(k); values.push(v); }
+        }
+
+        if (labels.length && values.length) {
+          if (chart) chart.destroy();
+          chart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels,
+              datasets: [{ label: `${level} composition`, data: values }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { display: true } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to fetch data from backend. Check that the server is running and CORS is enabled.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Get Community Composition";
+      }
+    }
+  </script>
+</body>
+</html>
