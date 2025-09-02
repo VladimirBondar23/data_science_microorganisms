@@ -1,23 +1,24 @@
+/* Base layout */
 body {
   font-family: Arial, sans-serif;
   background: #f4f7f9;
-  color: #333;
   margin: 0;
-  padding: 0;
+  color: #333;
 }
 
 .container {
-  max-width: 720px;
+  max-width: 780px;
   margin: 40px auto;
   background: #fff;
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
 }
 
 h2 {
   text-align: center;
   color: #2c3e50;
+  margin-top: 0;
 }
 
 h3 {
@@ -31,10 +32,11 @@ label {
   font-weight: bold;
 }
 
-select, input[type="text"] {
+select,
+input[type="text"] {
   width: 100%;
   padding: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
@@ -49,16 +51,16 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+  transition: background .25s;
 }
 
 button:hover:not(:disabled) {
   background: #2980b9;
+}
+
+button:disabled {
+  opacity: .7;
+  cursor: not-allowed;
 }
 
 pre {
@@ -69,4 +71,27 @@ pre {
   overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+#map {
+  height: 360px;
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin: 8px 0 12px;
+}
+
+.coords {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.coords input {
+  flex: 1;
+}
+
+#coordLabel {
+  width: 100%;
 }

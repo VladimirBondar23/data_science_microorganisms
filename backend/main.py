@@ -82,5 +82,5 @@ def search_items(level: str, organism_name: str):
 
 
 if __name__ == "__main__":
-    print("Starting FastAPI server on http://127.0.0.1:5000")
-    uvicorn.run("main:app", host="127.0.0.1", port=5000, reload=True)
+    print("Starting FastAPI server on http://127.0.0.1:5002")
+    uvicorn.run("main:app", host="127.0.0.1", port=5002, reload=True)
