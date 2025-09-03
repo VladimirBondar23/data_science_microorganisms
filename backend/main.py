@@ -8,11 +8,17 @@ from typing import Optional
 
 # Global variables to store DataFrames
 biorun_df = None
+biosample_df = None
 phylum_df = None
+order_df = None
+family_df = None
+class_df = None
+genus_df = None
+
 
 # threshold value
 THRESHOLD = 100_000_000
-RADIUS_KM = 1000  # Radius for geospatial filtering in kilometers
+RADIUS_KM = 100  # Radius for geospatial filtering in kilometers
 
 
 def parse_lat_lon(lat_lon_str):
@@ -63,17 +69,24 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
 
 def load_data():
-    global biorun_df, phylum_df
+    global biorun_df, phylum_df, biosample_df, order_df, family_df, class_df, genus_df
     # File paths
-    phylum_file_path = "sandpiper1.0.0.condensed.summary.phylum.csv.gz"
-    biorun_file_path = "sandpiper1.0.0.condensed.biorun-metadata.csv.gz"
-    biosample_file_path = "sandpiper1.0.0.condensed.biosample-metadata.csv.gz"
+    phylum_file_path = "data/sandpiper1.0.0.condensed.summary.phylum.csv.gz"
+    biorun_file_path = "data/sandpiper1.0.0.condensed.biorun-metadata.csv.gz"
+    biosample_file_path = "data/sandpiper1.0.0.condensed.biosample-metadata.csv.gz"
+    order_file_path = "data/sandpiper1.0.0.condensed.summary.order.csv.gz"
+    family_file_path = "data/sandpiper1.0.0.condensed.summary.family.csv.gz"
+    class_file_path = "data/sandpiper1.0.0.condensed.summary.class.csv.gz"
+    genus_file_path = "data/sandpiper1.0.0.condensed.summary.genus.csv.gz"
 
     # Columns to keep from biorun metadata
     columns_to_keep_biorun = ['run_accession', 'biosample', 'organism_name', 'run_total_bases']
 
     biorun_df = pd.read_csv(biorun_file_path, compression='gzip', usecols=columns_to_keep_biorun)
     phylum_df = pd.read_csv(phylum_file_path, compression='gzip', index_col='biorun')
+    class_df = pd.read_csv(class_file_path, compression='gzip', index_col='biorun')
+    order_df = pd.read_csv(order_file_path, compression='gzip', index_col='biorun')
+
 
     # --- OPTIMIZATION ---
     # Only load 'biosample' and 'lat_lon' columns to save memory
@@ -99,11 +112,22 @@ def load_data():
     # Remove duplicates
     biorun_df = biorun_df.drop_duplicates()
     phylum_df = phylum_df.drop_duplicates()
+    class_df = class_df.drop_duplicates()
+    order_df = order_df.drop_duplicates()
 
     print("DataFrames loaded efficiently and merged!")
 
 
-def get_average_samples(organism_name: str, lat: Optional[float] = None, lon: Optional[float] = None):
+def get_average_samples(level: str, organism_name: str, lat: Optional[float] = None, lon: Optional[float] = None):
+
+    taxon_data_frame = ''
+    if level.lower() == 'phylum':
+        taxon_data_frame = phylum_df
+    elif level.lower() == 'class':
+        taxon_data_frame = class_df
+    elif level.lower() == 'order':
+        taxon_data_frame = order_df
+
     # Start with the full dataset for the organism
     organism_runs = biorun_df[biorun_df["organism_name"] == organism_name]
 
@@ -124,27 +148,28 @@ def get_average_samples(organism_name: str, lat: Optional[float] = None, lon: Op
     if len(accessions) == 0:
         return {}  # no matches found
 
-    # Filter phylum_df to only include those runs
-    filtered_phylum = phylum_df.loc[phylum_df.index.intersection(accessions)]
+    # Filter to only include those runs
+    filtered_taxon = taxon_data_frame.loc[taxon_data_frame.index.intersection(accessions)]
 
-    if filtered_phylum.empty:
+    if filtered_taxon.empty:
         return {}
 
     # Drop the 'biorun' column before calculating the mean
     # Check if 'biorun' column exists before dropping
-    if 'biorun' in filtered_phylum.columns:
-        filtered_phylum = filtered_phylum.drop(columns=['biorun'])
+    if 'biorun' in filtered_taxon.columns:
+        filtered_taxon = filtered_taxon.drop(columns=['biorun'])
 
     # Replace 0 with NaN so they are ignored in the mean
-    filtered_phylum = filtered_phylum.replace(0, pd.NA)
+    filtered_taxon = filtered_taxon.replace(0, pd.NA)
 
     # Compute average across phylum columns
-    avg_phylum = filtered_phylum.mean()
+    avg_taxon = filtered_taxon.mean()
 
     # Convert to dict and drop NaN/None values
-    avg_phylum_dict = avg_phylum.dropna().to_dict()
+    avg_taxon_dict = avg_taxon.dropna().to_dict()
 
-    return avg_phylum_dict
+    return avg_taxon_dict
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -166,7 +191,7 @@ app.add_middleware(
 
 @app.get("/samples/")
 def search_items(level: str, organism_name: str, lat: Optional[float] = None, lon: Optional[float] = None):
-    result = get_average_samples(organism_name, lat, lon)
+    result = get_average_samples(level, organism_name, lat, lon)
     return {"organism": organism_name, "level": level, "average": result}
 
 
