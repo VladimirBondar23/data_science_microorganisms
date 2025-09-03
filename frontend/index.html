@@ -29,44 +29,66 @@
   <script src="app.js" defer></script>
 </head>
 <body>
-  <div class="container">
-    <h2>🌱 Microbial Community Composition</h2>
-
-    <!-- Taxonomy level -->
-    <label for="levelDropdown">Select a taxonomy level:</label>
-    <select id="levelDropdown">
-      <option value="">-- Select a Level --</option>
-      <option value="domain">Domain</option>
-      <option value="phylum" selected>Phylum</option>
-      <option value="class">Class</option>
-      <option value="order">Order</option>
-      <option value="family">Family</option>
-      <option value="genus">Genus</option>
-      <option value="species">Species</option>
-    </select>
-
-    <!-- Environment / organism_name -->
-    <label for="environmentInput">Enter environment / organism_name:</label>
-    <input type="text" id="environmentInput" placeholder="e.g., human oral metagenome" />
-
-    <!-- Interactive map -->
-    <label>Select location (click the map):</label>
-    <div id="map"></div>
-
-    <div class="coords">
-      <input id="latInput" type="text" placeholder="Latitude" readonly />
-      <input id="lonInput" type="text" placeholder="Longitude" readonly />
-      <button id="useLocation" type="button" title="Use my current location">Use my location</button>
-    </div>
-
-    <!-- Coordinates label (lat, lon as a single string) -->
-    <input id="coordLabel" type="text" placeholder="Coordinates (lat, lon)" readonly />
-
-    <button id="goBtn">Get Community Composition</button>
-
-    <h3>Results</h3>
-    <pre id="result"></pre>
-    <canvas id="chart" style="margin-top:16px;"></canvas>
+  <div class="dashboard">
+    <main class="main-content">
+      <header class="header">
+        <div class="logo">🦠</div>
+        <div style="display: flex; flex-direction: column;">
+            <h1>Microbial Community Dashboard</h1>
+        <span class="subtitle">Explore, visualize, and compare microbial compositions</span>
+        </div>
+      </header>
+      <section class="card">
+        <form class="input-form">
+          <div class="input-row">
+            <div class="input-group">
+              <label for="levelDropdown">Taxonomy Level</label>
+              <select id="levelDropdown">
+                <option value="">-- Select a Level --</option>
+                <option value="domain">Domain</option>
+                <option value="phylum" selected>Phylum</option>
+                <option value="class">Class</option>
+                <option value="order">Order</option>
+                <option value="family">Family</option>
+                <option value="genus">Genus</option>
+                <option value="species">Species</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="environmentInput">Environment / Organism Name</label>
+              <input type="text" id="environmentInput" placeholder="e.g., human oral metagenome" />
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group map-group">
+              <label for="map">Select Location (click the map)</label>
+              <div id="map"></div>
+              <div class="coords">
+                <input id="latInput" type="text" placeholder="Latitude" readonly />
+                <input id="lonInput" type="text" placeholder="Longitude" readonly />
+                <button id="useLocation" type="button" title="Use my current location">Use my location</button>
+              </div>
+              <input id="coordLabel" type="text" placeholder="Coordinates (lat, lon)" readonly />
+            </div>
+            <div class="input-group">
+              <button id="goBtn" class="primary-btn">Get Community Composition</button>
+            </div>
+          </div>
+        </form>
+      </section>
+      <section class="card results-card">
+        <div class="charts-flex">
+          <div class="chart-area">
+            <h3>Bar Chart</h3>
+            <canvas id="chart"></canvas>
+          </div>
+          <div class="chart-area">
+            <h3>Pie Chart</h3>
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 </body>
 </html>
