@@ -84,6 +84,10 @@ async function fetchCommunity() {
 
   alert("Fetching data from backend: " + url);
 
+  // Show spinner overlays for both charts and hide canvases
+  document.querySelectorAll('.chart-spinner').forEach(spinner => spinner.style.display = 'block');
+  document.querySelectorAll('.chart-area canvas').forEach(canvas => canvas.style.visibility = 'hidden');
+
   try {
     btn.disabled = true;
     btn.textContent = "Loading...";
@@ -115,8 +119,11 @@ async function fetchCommunity() {
     console.error(err);
     alert("Failed to fetch data from backend. Make sure FastAPI is running and CORS is enabled.");
   } finally {
-    btn.disabled = false;
-    btn.textContent = "Get Community Composition";
+  btn.disabled = false;
+  btn.textContent = "Get Community Composition";
+  // Hide spinner overlays for both charts and show canvases
+  document.querySelectorAll('.chart-spinner').forEach(spinner => spinner.style.display = 'none');
+  document.querySelectorAll('.chart-area canvas').forEach(canvas => canvas.style.visibility = 'visible');
   }
 }
 
