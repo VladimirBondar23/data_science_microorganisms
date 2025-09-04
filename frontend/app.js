@@ -35,6 +35,14 @@ function setCoords(lat, lon) {
       const { lat, lng } = marker.getLatLng();
       setCoords(lat, lng);
     });
+    // Listen for popup close (when clicking 'x')
+    marker.on("popupclose", () => {
+      map.removeLayer(marker);
+      marker = null;
+      latEl.value = '';
+      lonEl.value = '';
+      coordLabelEl.value = '';
+    });
   }
   updateCoordLabel(lat, lon);
 }
@@ -82,11 +90,14 @@ async function fetchCommunity() {
     url += `&coords=${encodeURIComponent(coordStr)}`;
   }
 
-  alert("Fetching data from backend: " + url);
-
   // Show spinner overlays for both charts and hide canvases
   document.querySelectorAll('.chart-spinner').forEach(spinner => spinner.style.display = 'block');
   document.querySelectorAll('.chart-area canvas').forEach(canvas => canvas.style.visibility = 'hidden');
+  // Hide 'No data available' messages if present
+  const noDataMsgBar = document.getElementById('noDataMsgBar');
+  const noDataMsgPie = document.getElementById('noDataMsgPie');
+  if (noDataMsgBar) noDataMsgBar.style.display = 'none';
+  if (noDataMsgPie) noDataMsgPie.style.display = 'none';
 
   try {
     btn.disabled = true;
@@ -134,6 +145,46 @@ let pieChartInstance = null;
 function renderCharts(data) {
   const labels = data.map(item => item.label);
   const values = data.map(item => item.value);
+
+  // Show 'No data available' message if data is empty
+  const barContainer = document.getElementById('chart').parentElement;
+  const pieContainer = document.getElementById('pieChart').parentElement;
+  let noDataMsgBar = document.getElementById('noDataMsgBar');
+  let noDataMsgPie = document.getElementById('noDataMsgPie');
+  if (!data || data.length === 0) {
+    // Destroy existing charts if any
+    if (barChartInstance) barChartInstance.destroy();
+    if (pieChartInstance) pieChartInstance.destroy();
+    // Hide canvases
+    document.getElementById('chart').style.display = 'none';
+    document.getElementById('pieChart').style.display = 'none';
+    // Show message in both containers
+    if (!noDataMsgBar) {
+      noDataMsgBar = document.createElement('div');
+      noDataMsgBar.id = 'noDataMsgBar';
+      noDataMsgBar.textContent = 'No data available for your search.';
+      noDataMsgBar.style.cssText = 'text-align:center; color:#e74c3c; font-size:1.2em; margin:20px;';
+      barContainer.appendChild(noDataMsgBar);
+    } else {
+      noDataMsgBar.style.display = 'block';
+    }
+    if (!noDataMsgPie) {
+      noDataMsgPie = document.createElement('div');
+      noDataMsgPie.id = 'noDataMsgPie';
+      noDataMsgPie.textContent = 'No data available for your search.';
+      noDataMsgPie.style.cssText = 'text-align:center; color:#e74c3c; font-size:1.2em; margin:20px;';
+      pieContainer.appendChild(noDataMsgPie);
+    } else {
+      noDataMsgPie.style.display = 'block';
+    }
+    return;
+  } else {
+    // Show canvases
+    document.getElementById('chart').style.display = 'block';
+    document.getElementById('pieChart').style.display = 'block';
+    if (noDataMsgBar) noDataMsgBar.style.display = 'none';
+    if (noDataMsgPie) noDataMsgPie.style.display = 'none';
+  }
 
   // Bar chart
   const barCtx = document.getElementById('chart').getContext('2d');
@@ -188,4 +239,3 @@ function renderCharts(data) {
     },
   });
 }
-
